@@ -11,6 +11,8 @@
 
 + (NSString *)getAppSecret;
 
++ (BOOL)isNetworkAllowed;
+
 + (void)configureAppCenter;
 
 + (MSACWrapperSdk *)getWrapperSdk;

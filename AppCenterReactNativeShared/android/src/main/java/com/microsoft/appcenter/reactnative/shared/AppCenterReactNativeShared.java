@@ -4,19 +4,22 @@
 package com.microsoft.appcenter.reactnative.shared;
 
 import android.app.Application;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.text.TextUtils;
 
 import com.microsoft.appcenter.AppCenter;
 import com.microsoft.appcenter.ingestion.models.WrapperSdk;
 import com.microsoft.appcenter.utils.AppCenterLog;
+import com.microsoft.appcenter.utils.PrefStorageConstants;
 
 import org.json.JSONObject;
 
 import java.io.InputStream;
 
-import static com.microsoft.appcenter.utils.AppCenterLog.LOG_TAG;
-
 public class AppCenterReactNativeShared {
+
+    public static final String LOG_TAG = "AppCenterReactNativeShared";
 
     private static final String APPCENTER_CONFIG_ASSET = "appcenter-config.json";
 
@@ -43,6 +46,8 @@ public class AppCenterReactNativeShared {
         wrapperSdk.setWrapperSdkName(com.microsoft.appcenter.reactnative.shared.BuildConfig.SDK_NAME);
         AppCenter.setWrapperSdk(wrapperSdk);
         readConfigurationFile();
+        boolean isNetworkAllowed = isNetworkAllowed();
+        AppCenter.setNetworkRequestsAllowed(isNetworkAllowed);
         if (!sStartAutomatically) {
             AppCenterLog.debug(LOG_TAG, "Configure not to start automatically.");
             return;
@@ -80,6 +85,24 @@ public class AppCenterReactNativeShared {
             AppCenterLog.error(LOG_TAG, "Failed to parse appcenter-config.json", e);
             sConfiguration = new JSONObject();
         }
+    }
+
+    private static boolean isNetworkAllowed() {
+        SharedPreferences preferences = sApplication.getSharedPreferences("AppCenter", Context.MODE_PRIVATE);
+        boolean hasStoredValue = preferences.contains(PrefStorageConstants.ALLOWED_NETWORK_REQUEST);
+        if (hasStoredValue) {
+            boolean isAllowed = preferences.getBoolean(PrefStorageConstants.ALLOWED_NETWORK_REQUEST);
+            AppCenterLog.debug(LOG_TAG, "(Preferences) Network requests are " + (isAllowed ? "allowed" : "forbidden"));
+            return isAllowed;
+        }
+        boolean hasConfigValue = sConfiguration.isNull(PrefStorageConstants.ALLOWED_NETWORK_REQUEST);
+        if (hasConfigValue) {
+            boolean isAllowed = sConfiguration.getBoolean(PrefStorageConstants.ALLOWED_NETWORK_REQUEST);
+            AppCenterLog.debug(LOG_TAG, "(Configuration) Network requests are " + (isAllowed ? "allowed" : "forbidden"));
+            return isAllowed;
+        }
+        AppCenterLog.debug(LOG_TAG, "Network requests default value applied.");
+        return true;
     }
 
     public static synchronized void setAppSecret(String secret) {

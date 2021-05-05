@@ -4,11 +4,14 @@
 #import "AppCenterReactNativeShared.h"
 #import <AppCenter/MSACAppCenter.h>
 #import <AppCenter/MSACWrapperSdk.h>
+#import <AppCenter/MSACLogger.h>
 
 @implementation AppCenterReactNativeShared
 
+static NSString *const logTag = @"AppCenterReactNativeShared";
 static NSString *const kAppCenterSecretKey = @"AppSecret";
 static NSString *const kAppCenterStartAutomaticallyKey = @"StartAutomatically";
+static NSString *const kAppCenterNetworkRequestsAllowedByDefaultKey = @"AppCenterNetworkRequestsAllowedByDefault";
 static NSString *const kAppCenterConfigResource = @"AppCenter-Config";
 
 static NSString *appSecret;
@@ -37,6 +40,21 @@ static NSDictionary *configuration;
   return appSecret;
 }
 
++ (BOOL)isNetworkAllowed {
+    NSNumber *storedAllowedValue = [[NSUserDefaults standardUserDefaults] objectForKey:@"MSAppCenterNetworkRequestsAllowed"];
+    if (storedAllowedValue != nil) {
+      MSACLogDebug(logTag, @"Stored network requests value: %@.", [storedAllowedValue boolValue] ? @"allowed" : @"forbidden");
+      return [storedAllowedValue boolValue];
+    }
+    NSNumber *sdkNetworkRequestsAllowedByDefault = [configuration objectForKey:kAppCenterNetworkRequestsAllowedByDefaultKey];
+    if (sdkNetworkRequestsAllowedByDefault != nil) {
+      MSACLogDebug(logTag, @"Configuration network requests value: %@.", [storedAllowedValue boolValue] ? @"allowed" : @"forbidden");
+      return [sdkNetworkRequestsAllowedByDefault boolValue];
+    }
+    MSACLogDebug(logTag, @"Network requests default value applied.");
+    return YES;
+}
+
 + (void)configureAppCenter {
   if (!wrapperSdk) {
     MSACWrapperSdk *wrapperSdk = [[MSACWrapperSdk alloc] initWithWrapperSdkVersion:@"4.1.0"
@@ -47,6 +65,8 @@ static NSDictionary *configuration;
                                                          liveUpdatePackageHash:nil];
     [self setWrapperSdk:wrapperSdk];
     [AppCenterReactNativeShared getAppSecret];
+    BOOL isNetworkAllowed = [AppCenterReactNativeShared isNetworkAllowed];
+    [MSACAppCenter setNetworkRequestsAllowed:isNetworkAllowed];
     if (startAutomatically) {
       if ([appSecret length] == 0) {
         [MSACAppCenter configure];
