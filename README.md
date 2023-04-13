@@ -35,4 +35,4 @@ You must sign a [Contributor License Agreement](https://cla.microsoft.com/) befo
 App Center SDK support is provided directly within the App Center portal. Any time you need help, just log in to [App Center](https://appcenter.ms), then click the blue chat button in the lower-right corner of any page and our dedicated support team will respond to your questions and feedback. For additional information, see the [App Center Help Center](https://intercom.help/appcenter/getting-started/welcome-to-app-center-support).
 
 ### 3.2 Twitter
-We're on Twitter as [@VSAppCenter](https://www.twitter.com/VSAppCenter).
+We're on Twitter as [@VSAppCenter](https://www.twitter.com/VSAppCenter)..
